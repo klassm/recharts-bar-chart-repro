@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, Cell, RectangleProps, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, RectangleProps, Tooltip, XAxis, YAxis } from "recharts";
 
 interface IData {
   name: string;
@@ -53,14 +53,26 @@ const data: IData[] = [
 ];
 
 
-const CustomShape = (props: RectangleProps & IData) => {
+const CustomShape = (props: RectangleProps) => {
   const { x = 0, y, width = 0, height, fill } = props;
-  const rectangleProps = { x, y, width, height, fill, strokeWidth: 0 };
+  const rectangleProps = { x, y, width: (x / 3000) * width, height, fill, strokeWidth: 0 };
   return <g>
     <rect { ...rectangleProps } />
   </g>
 };
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="custom-tooltip">
+        <p className="label">{`${label} : ${payload[0].value}`}</p>
+        <p className="desc">Anything you want can be displayed here.</p>
+      </div>
+    );
+  }
+
+  return null;
+};
 function App() {
 
   return (
@@ -79,11 +91,14 @@ function App() {
         <CartesianGrid strokeDasharray="3 3"/>
         <XAxis dataKey="name"/>
         <YAxis/>
-        <Bar dataKey="uv" fill="#8884d8" shape={CustomShape} label={ { position: 'top' } }>
+        <Tooltip content={<CustomTooltip />} cursor={false} />
+        <Bar stackId="a" dataKey="uv" fill="#8884d8" shape={(props) => <CustomShape {...props} name={props.name as string}/>} label={ { position: 'top' } }>
           { data.map((_entry, index) => (
             <Cell key={ `cell-${ index }` }/>
           )) }
         </Bar>
+        <Bar dataKey="pv" stackId="a"/>
+        <Bar dataKey="amt" stackId="b"/>
       </BarChart>
     </>
   )
